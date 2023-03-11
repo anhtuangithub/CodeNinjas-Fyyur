@@ -77,7 +77,10 @@ with app.app_context():
 #----------------------------------------------------------------------------#
 
 def format_datetime(value, format='medium'):
-  date = dateutil.parser.parse(value)
+  if isinstance(value, str):
+      date = dateutil.parser.parse(value)
+  else:
+      date = value
   if format == 'full':
       format="EEEE MMMM, d, y 'at' h:mma"
   elif format == 'medium':
@@ -164,14 +167,14 @@ def show_venue(venue_id):
           "artist_id": show.artist.id,
           "artist_name": show.artist.name,
           "artist_image_link": show.artist.image_link,
-          "start_time": show.start_time.isoformat()
+          "start_time": show.start_time
         })
       else :
         pastShow.append({
           "artist_id": show.artist.id,
           "artist_name": show.artist.name,
           "artist_image_link": show.artist.image_link,
-          "start_time": show.start_time.isoformat()
+          "start_time": show.start_time
         })
     data = {
       "id": venue.id,
@@ -311,14 +314,14 @@ def show_artist(artist_id):
           "venue_id": show.venue.id,
           "venue_name": show.venue.name,
           "venue_image_link": show.venue.image_link,
-          "start_time": show.start_time.isoformat()
+          "start_time": show.start_time
         })
       else :
         pastShow.append({
           "venue_id": show.venue.id,
           "venue_name": show.venue.name,
           "venue_image_link": show.venue.image_link,
-          "start_time": show.start_time.isoformat()
+          "start_time": show.start_time
         })
     data = {
       "id": artist.id,
@@ -498,7 +501,7 @@ def shows():
       "artist_id": show.artist_id,
       "artist_name": show.artist.name,
       "artist_image_link": show.artist.image_link,
-      "start_time": show.start_time.isoformat()
+      "start_time": show.start_time
     })
   return render_template('pages/shows.html', shows=data)
 
