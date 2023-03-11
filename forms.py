@@ -2,37 +2,28 @@ from datetime import datetime
 from flask_wtf import Form
 from wtforms import StringField, SelectField, SelectMultipleField, DateTimeField, BooleanField
 from wtforms.validators import DataRequired, AnyOf, URL, Regexp
-from enum import Enum
+from enums import Genre, State
 import re
-from wtforms import ValidationError
 
-def validate_phone(self, phone):
-        us_phone_num = '^([0-9]{3})[-][0-9]{3}[-][0-9]{4}$'
-        match = re.search(us_phone_num, phone.data)
-        if not match:
-            raise ValidationError('Error, phone number must be in format xxx-xxx-xxxx')
+def is_valid_phone(number):
+    """ Validate phone numbers like:
+    1234567890 - no space
+    123.456.7890 - dot separator
+    123-456-7890 - dash separator
+    123 456 7890 - space separator
+
+    Patterns:
+    000 = [0-9]{3}
+    0000 = [0-9]{4}
+    -.  = ?[-. ]
+
+    Note: (? = optional) - Learn more: https://regex101.com/
+    """
+    regex = re.compile('^\(?([0-9]{3})\)?[-. ]?([0-9]{3})[-. ]?([0-9]{4})$')
+    return regex.match(number)
 
 
-class GenreEnum(Enum):
-	Alternative = "Alternative"
-	Blues = "Blues"
-	Classical = "Classical"
-	Country = "Country"
-	Electronic = "Electronic"
-	Folk = "Folk"
-	Funk = "Funk"
-	Hip_Hop = "Hip-Hop"
-	Heavy_Metal = "Heavy Metal"
-	Instrumental = "Instrumental"
-	Jazz = "Jazz"
-	Musical_Theatre = "Musical Theatre"
-	Pop = "Pop"
-	Punk = "Punk"
-	RnB = "R&B"
-	Reggae = "Reggae"
-	Rock_n_Roll = "Rock n Roll"
-	Soul = "Soul"
-	Other = "Other"
+
         
 class ShowForm(Form):
     artist_id = StringField(
@@ -56,72 +47,20 @@ class VenueForm(Form):
     )
     state = SelectField(
         'state', validators=[DataRequired()],
-        choices=[
-            ('AL', 'AL'),
-            ('AK', 'AK'),
-            ('AZ', 'AZ'),
-            ('AR', 'AR'),
-            ('CA', 'CA'),
-            ('CO', 'CO'),
-            ('CT', 'CT'),
-            ('DE', 'DE'),
-            ('DC', 'DC'),
-            ('FL', 'FL'),
-            ('GA', 'GA'),
-            ('HI', 'HI'),
-            ('ID', 'ID'),
-            ('IL', 'IL'),
-            ('IN', 'IN'),
-            ('IA', 'IA'),
-            ('KS', 'KS'),
-            ('KY', 'KY'),
-            ('LA', 'LA'),
-            ('ME', 'ME'),
-            ('MT', 'MT'),
-            ('NE', 'NE'),
-            ('NV', 'NV'),
-            ('NH', 'NH'),
-            ('NJ', 'NJ'),
-            ('NM', 'NM'),
-            ('NY', 'NY'),
-            ('NC', 'NC'),
-            ('ND', 'ND'),
-            ('OH', 'OH'),
-            ('OK', 'OK'),
-            ('OR', 'OR'),
-            ('MD', 'MD'),
-            ('MA', 'MA'),
-            ('MI', 'MI'),
-            ('MN', 'MN'),
-            ('MS', 'MS'),
-            ('MO', 'MO'),
-            ('PA', 'PA'),
-            ('RI', 'RI'),
-            ('SC', 'SC'),
-            ('SD', 'SD'),
-            ('TN', 'TN'),
-            ('TX', 'TX'),
-            ('UT', 'UT'),
-            ('VT', 'VT'),
-            ('VA', 'VA'),
-            ('WA', 'WA'),
-            ('WV', 'WV'),
-            ('WI', 'WI'),
-            ('WY', 'WY'),
-        ]
+        choices= State.choices()
     )
     address = StringField(
         'address', validators=[DataRequired()]
     )
     phone = StringField(
-        'phone',  validators=[Regexp('^[0-9]{3}-[0-9]{3}-[0-9]{4}$', message='Invalid phone number format')]
+        'phone'
     )
     image_link = StringField(
         'image_link'
     )
     genres = SelectMultipleField(
         'genres', validators=[DataRequired()],
-        choices=[(member.name, member.value) for member in GenreEnum]
+        choices= Genre.choices()
     )
     facebook_link = StringField(
         'facebook_link', validators=[URL()]
@@ -136,6 +75,30 @@ class VenueForm(Form):
         'seeking_description'
     )
 
+    def validate(self, **kwargs):
+        # `**kwargs` to match the method's signature in the `FlaskForm` class.
+
+        """Define a custom validate method in your Form:"""
+        validated = Form.validate(self)
+
+        if not validated:
+            return False
+
+        if not is_valid_phone(self.phone.data):
+            self.phone.errors.append('Invalid phone.')
+            return False
+
+        if not set(self.genres.data).issubset(dict(Genre.choices()).keys()):
+            self.genres.errors.append('Invalid genres.')
+            return False
+
+        if self.state.data not in dict(State.choices()).keys():
+            self.state.errors.append('Invalid state.')
+            return False
+
+        # if pass validation
+        return True
+
 
 
 class ArtistForm(Form):
@@ -147,69 +110,17 @@ class ArtistForm(Form):
     )
     state = SelectField(
         'state', validators=[DataRequired()],
-        choices=[
-            ('AL', 'AL'),
-            ('AK', 'AK'),
-            ('AZ', 'AZ'),
-            ('AR', 'AR'),
-            ('CA', 'CA'),
-            ('CO', 'CO'),
-            ('CT', 'CT'),
-            ('DE', 'DE'),
-            ('DC', 'DC'),
-            ('FL', 'FL'),
-            ('GA', 'GA'),
-            ('HI', 'HI'),
-            ('ID', 'ID'),
-            ('IL', 'IL'),
-            ('IN', 'IN'),
-            ('IA', 'IA'),
-            ('KS', 'KS'),
-            ('KY', 'KY'),
-            ('LA', 'LA'),
-            ('ME', 'ME'),
-            ('MT', 'MT'),
-            ('NE', 'NE'),
-            ('NV', 'NV'),
-            ('NH', 'NH'),
-            ('NJ', 'NJ'),
-            ('NM', 'NM'),
-            ('NY', 'NY'),
-            ('NC', 'NC'),
-            ('ND', 'ND'),
-            ('OH', 'OH'),
-            ('OK', 'OK'),
-            ('OR', 'OR'),
-            ('MD', 'MD'),
-            ('MA', 'MA'),
-            ('MI', 'MI'),
-            ('MN', 'MN'),
-            ('MS', 'MS'),
-            ('MO', 'MO'),
-            ('PA', 'PA'),
-            ('RI', 'RI'),
-            ('SC', 'SC'),
-            ('SD', 'SD'),
-            ('TN', 'TN'),
-            ('TX', 'TX'),
-            ('UT', 'UT'),
-            ('VT', 'VT'),
-            ('VA', 'VA'),
-            ('WA', 'WA'),
-            ('WV', 'WV'),
-            ('WI', 'WI'),
-            ('WY', 'WY'),
-        ]
+        choices= State.choices()
     )
     phone = StringField(
-        'phone',  validators=[Regexp('^[0-9]{3}-[0-9]{3}-[0-9]{4}$', message='Invalid phone number format')]
+        'phone'
     )
     image_link = StringField(
         'image_link'
     )
     genres = SelectMultipleField(
         'genres', validators=[DataRequired()],
-        choices=[(member.name, member.value) for member in GenreEnum]
+        choices=Genre.choices()
      )
     facebook_link = StringField(
         'facebook_link', validators=[URL()]
@@ -224,3 +135,27 @@ class ArtistForm(Form):
     seeking_description = StringField(
             'seeking_description'
      )
+    
+    def validate(self, **kwargs):
+        # `**kwargs` to match the method's signature in the `FlaskForm` class.
+
+        """Define a custom validate method in your Form:"""
+        validated = Form.validate(self)
+
+        if not validated:
+            return False
+
+        if not is_valid_phone(self.phone.data):
+            self.phone.errors.append('Invalid phone.')
+            return False
+
+        if not set(self.genres.data).issubset(dict(Genre.choices()).keys()):
+            self.genres.errors.append('Invalid genres.')
+            return False
+
+        if self.state.data not in dict(State.choices()).keys():
+            self.state.errors.append('Invalid state.')
+            return False
+
+        # if pass validation
+        return True

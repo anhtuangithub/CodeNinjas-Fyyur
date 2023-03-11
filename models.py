@@ -7,7 +7,7 @@ class Show(db.Model):
 
     artist_id = db.Column(db.Integer, db.ForeignKey('Artist.id'), primary_key=True)
     venue_id = db.Column(db.Integer, db.ForeignKey('Venue.id'), primary_key=True)
-    start_time = db.Column(db.DateTime)
+    start_time = db.Column(db.DateTime, primary_key=True)
 
 class Venue(db.Model):
     __tablename__ = 'Venue'
@@ -18,13 +18,13 @@ class Venue(db.Model):
     state = db.Column(db.String(255))
     address = db.Column(db.String(255))
     phone = db.Column(db.String(20))
-    genres = db.Column(db.String(255))
+    genres = db.Column(db.ARRAY(db.String), nullable=False)
     image_link = db.Column(db.String(500))
     facebook_link = db.Column(db.String(255))
     website_link = db.Column(db.String(255))
     seeking_talent = db.Column(db.Boolean)
     seeking_description = db.Column(db.String(1000))
-    shows = db.relationship('Show', backref = 'venue')
+    shows = db.relationship('Show', backref = 'venue', lazy='joined', cascade="all, delete")
 
 class Artist(db.Model):
     __tablename__ = 'Artist'
@@ -34,10 +34,10 @@ class Artist(db.Model):
     city = db.Column(db.String(255))
     state = db.Column(db.String(255))
     phone = db.Column(db.String(20))
-    genres = db.Column(db.String(255))
+    genres = db.Column(db.ARRAY(db.String), nullable=False)
     image_link = db.Column(db.String(500))
     facebook_link = db.Column(db.String(255))
     website_link = db.Column(db.String(255))
     seeking_venue = db.Column(db.Boolean)
     seeking_description = db.Column(db.String(1000))
-    shows = db.relationship('Show', backref = 'artist')
+    shows = db.relationship('Show', backref = 'artist', lazy='joined', cascade="all, delete")
