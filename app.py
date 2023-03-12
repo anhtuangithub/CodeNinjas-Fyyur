@@ -39,10 +39,7 @@ with app.app_context():
 #----------------------------------------------------------------------------#
 
 def format_datetime(value, format='medium'):
-  if isinstance(value, str):
-      date = dateutil.parser.parse(value)
-  else:
-      date = value
+  date = dateutil.parser.parse(value)
   if format == 'full':
       format="EEEE MMMM, d, y 'at' h:mma"
   elif format == 'medium':
@@ -125,8 +122,7 @@ def show_venue(venue_id):
         'artist_id': show.artist_id,
         'artist_name': show.artist.name,
         'artist_image_link': show.artist.image_link,
-        #'start_time': show.start_time
-        'start_time': show.start_time.strftime("%m/%d/%Y, %H:%M"),
+        'start_time': show.start_time.strftime("%m/%d/%Y, %H:%M")
     }
     if show.start_time > date:
       upcomingShows.append(temp_show)
@@ -253,7 +249,7 @@ def show_artist(artist_id):
       "venue_id": show.venue.id,
       "venue_name": show.venue.name,
       "venue_image_link": show.venue.image_link,
-      "start_time": show.start_time,
+      "start_time": show.start_time.strftime("%m/%d/%Y, %H:%M"),
     }
     if show.start_time > date:
       upcomingShows.append(temp_show)
@@ -412,7 +408,7 @@ def shows():
       "artist_id": show.artist_id,
       "artist_name": show.artist.name,
       "artist_image_link": show.artist.image_link,
-      "start_time": show.start_time
+      "start_time": show.start_time.strftime("%m/%d/%Y, %H:%M")
     })
   return render_template('pages/shows.html', shows=data)
 
